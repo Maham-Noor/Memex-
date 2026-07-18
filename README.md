@@ -1,7 +1,5 @@
 # Memex-
 
-Semantic Browser Recall is a privacy-first browser memory system that captures browsing sessions and enables semantic retrieval of previously visited pages.
-
 ## Milestone 0: Planning & Repository Setup
 
 This repository has an initial scaffold for:
@@ -17,8 +15,6 @@ This repository has an initial scaffold for:
 
 ```powershell
 cd backend
-"C:/Users/Maham Noor/AppData/Local/Python/pythoncore-3.14-64/python.exe" -m pip install --upgrade pip
-"C:/Users/Maham Noor/AppData/Local/Python/pythoncore-3.14-64/python.exe" -m pip install -e .
 uvicorn app.main:app --reload --port 8000
 ```
 
