@@ -1,6 +1,6 @@
 # Memex-
 
-## Milestone 0: Planning & Repository Setup
+## Repository Setup
 
 This repository has an initial scaffold for:
 

@@ -4,9 +4,68 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Memex Recall</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 1rem; width: 320px; }
+    h1 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    .status { margin-top: 1rem; padding: 0.75rem; border: 1px solid #ccc; border-radius: 8px; background: #f8f8f8; }
+    button { padding: 0.5rem 1rem; font-size: 0.95rem; cursor: pointer; }
+  </style>
 </head>
 <body>
   <h1>Memex Recall</h1>
-  <p>Browser extension scaffold initialized.</p>
+  <div>
+    <button id="refresh">Refresh queue</button>
+    <button id="flush">Flush retry queue</button>
+  </div>
+  <div class="status">
+    <p><strong>Queue length:</strong> <span id="queue-length">…</span></p>
+    <p><strong>Last update:</strong> <span id="last-update">never</span></p>
+  </div>
+
+  <script>
+    const queueLengthEl = document.getElementById("queue-length");
+    const lastUpdateEl = document.getElementById("last-update");
+    const refreshButton = document.getElementById("refresh");
+    const flushButton = document.getElementById("flush");
+
+    function updateLastUpdate() {
+      lastUpdateEl.textContent = new Date().toLocaleTimeString();
+    }
+
+    function showQueue(queueLength) {
+      queueLengthEl.textContent = queueLength;
+      updateLastUpdate();
+    }
+
+    function sendMessage(type) {
+      return new Promise((resolve) => {
+        chrome.runtime.sendMessage({ type }, (response) => {
+          resolve(response);
+        });
+      });
+    }
+
+    async function refreshQueue() {
+      const response = await sendMessage("MEMEX_QUEUE_INFO");
+      if (response?.status === "ok") {
+        showQueue(response.queueLength);
+      } else {
+        queueLengthEl.textContent = "error";
+      }
+    }
+
+    async function flushQueue() {
+      const response = await sendMessage("MEMEX_QUEUE_FLUSH");
+      if (response?.status === "ok") {
+        refreshQueue();
+      } else {
+        queueLengthEl.textContent = "error";
+      }
+    }
+
+    refreshButton.addEventListener("click", refreshQueue);
+    flushButton.addEventListener("click", flushQueue);
+    refreshQueue();
+  </script>
 </body>
 </html>
