@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "memex-backend"
 version = "0.1.0"
 description = "Backend API for Semantic Browser Recall"
-readme = "README.md"
+
 requires-python = ">=3.11"
 license = { text = "MIT" }
 
