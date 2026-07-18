@@ -1,0 +1,32 @@
+# Documentation (temporary)
+docs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pytest_cache/
+.pytest_cache/
+.Python
+*.env
+.env*
+.venv/
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

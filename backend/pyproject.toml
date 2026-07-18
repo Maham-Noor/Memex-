@@ -1,0 +1,28 @@
+[project]
+name = "memex-backend"
+version = "0.1.0"
+description = "Backend API scaffold for Semantic Browser Recall"
+authors = ["Memex+ Team <team@example.com>"]
+readme = "README.md"
+requires-python = ">=3.11"
+
+[project.dependencies]
+fastapi = "^0.114.0"
+uvicorn = { extras = ["standard"], version = "^0.23.0" }
+python-dotenv = "^1.0.0"
+
+[project.optional-dependencies]
+dev = [
+  "black>=24.3.0",
+  "ruff>=0.0.341",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py314"]
+include = "\\.pyi?$"
+exclude = "(\\.git|\\.venv|build|dist|.eggs)"
+
+[build-system]
+requires = ["hatchling>=1.0.0"]
+build-backend = "hatchling.build"
