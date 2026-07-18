@@ -2,7 +2,9 @@
 name = "memex-backend"
 version = "0.1.0"
 description = "Backend API scaffold for Semantic Browser Recall"
-authors = ["Memex+ Team <team@example.com>"]
+authors = [
+    { name = "Memex+ Team" }
+]
 readme = "README.md"
 requires-python = ">=3.11"
 
