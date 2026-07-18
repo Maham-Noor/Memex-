@@ -3,13 +3,21 @@
   "name": "Memex Browser Recall",
   "version": "0.1.0",
   "description": "Capture and recall browser sessions using semantic memory.",
-  "permissions": ["storage", "tabs", "history"],
+  "permissions": ["storage", "tabs", "activeTab", "alarms"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.js"],
+      "run_at": "document_idle"
+    }
+  ],
   "action": {
     "default_popup": "popup/popup.html",
     "default_title": "Memex Recall"
-  },
-  "background": {
-    "service_worker": "background.js"
   },
   "icons": {
     "16": "icons/icon16.png",
