@@ -1,7 +1,3 @@
-from fastapi import FastAPI
+from app.app import create_app
 
-app = FastAPI(title="Memex Backend", version="0.1.0")
-
-@app.get("/")
-def read_root() -> dict:
-    return {"status": "ok", "message": "Memex backend is running."}
+app = create_app()
