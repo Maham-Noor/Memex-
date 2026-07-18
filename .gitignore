@@ -1,6 +1,10 @@
 # Documentation (temporary)
 docs/
 
+# Ignore README files
+README.md
+**/README.md
+
 # Python
 __pycache__/
 *.py[cod]
