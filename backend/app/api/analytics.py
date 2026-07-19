@@ -1,14 +1,12 @@
 from fastapi import APIRouter
+
+from app.core.di import container
 from app.core.models.analytics import AnalyticsRequest, AnalyticsResponse
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
+analytics_service = container.analytics_service()
+
 @router.post("/", response_model=AnalyticsResponse)
 async def analytics_report(request: AnalyticsRequest) -> AnalyticsResponse:
-    # TODO: replace mock analytics with actual data aggregation
-    summary = {
-        "totalCaptures": 0,
-        "totalReadTimeSeconds": 0,
-        "topDomains": [],
-    }
-    return AnalyticsResponse(status="ok", summary=summary)
+    return analytics_service.summarize(request)
