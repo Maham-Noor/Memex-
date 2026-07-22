@@ -1,6 +1,7 @@
 import hashlib
 import logging
 import re
+from collections import Counter
 from typing import List, Optional
 
 from app.core.models.capture import CapturePayload
@@ -53,8 +54,16 @@ class ProcessingService:
         return "general"
 
     def create_embedding(self, text: str) -> List[float]:
-        # Placeholder embedding: deterministic pseudo-embedding by character codes
-        return [float((ord(char) % 10) - 5) for char in text[:64]]
+        normalized = self.normalize_text(text)
+        tokens = [token for token in re.findall(r"[a-z0-9]+", normalized.lower()) if token]
+        if not tokens:
+            return [0.0]
+
+        counts = Counter(tokens)
+        embedding = [float(counts[token]) for token in sorted(counts.keys())[:64]]
+        while len(embedding) < 64:
+            embedding.append(0.0)
+        return embedding
 
     def process_capture(self, payload: CapturePayload) -> ProcessingResult:
         normalized = self.normalize_text(payload.content)
