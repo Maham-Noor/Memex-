@@ -80,3 +80,34 @@ def test_capture_and_analytics_services_use_repositories(tmp_path: Path) -> None
     summary = analytics_service.summarize(AnalyticsRequest())
     assert summary.summary["totalCaptures"] == 1
     assert summary.summary["totalReadTimeSeconds"] == 12
+
+
+def test_sync_service_can_restore_from_backup(tmp_path: Path) -> None:
+    db_path = tmp_path / "memex.db"
+    backup_path = tmp_path / "memex_backup.db"
+
+    capture_repo = CaptureRepository(db_path=str(db_path))
+    payload = CapturePayload(
+        captureId="backup-test-1",
+        page={"url": "https://example.com", "title": "Example"},
+        content="Backup content",
+        headings=[],
+        scrollDepthPercent=45,
+        readingDurationSeconds=9,
+        timestamps={
+            "capturedAt": "2026-07-22T00:00:00Z",
+            "sourceCreatedAt": "2026-07-22T00:00:00Z",
+            "lastUpdatedAt": "2026-07-22T00:00:00Z",
+        },
+        finalCapture=True,
+    )
+    capture_repo.save(payload.captureId, payload.model_dump(), "2026-07-22T00:00:00Z")
+
+    sync_service = SyncService(db_path=str(db_path))
+    sync_service.backup_database(str(backup_path))
+    assert sync_service.verify_recovery(str(backup_path)) is True
+
+    restored_repo = CaptureRepository(db_path=str(db_path))
+    restored_capture = restored_repo.get_by_id(payload.captureId)
+    assert restored_capture is not None
+    assert restored_capture["captureId"] == payload.captureId

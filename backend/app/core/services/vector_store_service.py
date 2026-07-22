@@ -3,32 +3,27 @@ import sqlite3
 from pathlib import Path
 from typing import Optional
 
+from app.core.repositories.migration import MigrationManager
+
 
 class VectorStoreService:
     def __init__(self, db_path: Optional[str] = None):
         self.db_path = db_path or str(Path(__file__).resolve().parents[2] / "memex.db")
-        self._initialize()
-
-    def _initialize(self) -> None:
-        with sqlite3.connect(self.db_path) as connection:
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS vectors (
-                    capture_id TEXT PRIMARY KEY,
-                    embedding TEXT NOT NULL,
-                    category TEXT NOT NULL
-                )
-                """
-            )
-            connection.commit()
+        self.migration_manager = MigrationManager(db_path=self.db_path)
+        self.migration_manager.apply_migrations()
 
     def upsert(self, capture_id: str, embedding: list[float], category: str) -> None:
         with sqlite3.connect(self.db_path) as connection:
-            connection.execute(
-                "INSERT OR REPLACE INTO vectors (capture_id, embedding, category) VALUES (?, ?, ?)",
-                (capture_id, json.dumps(embedding), category),
-            )
-            connection.commit()
+            connection.execute("BEGIN")
+            try:
+                connection.execute(
+                    "INSERT OR REPLACE INTO vectors (capture_id, embedding, category) VALUES (?, ?, ?)",
+                    (capture_id, json.dumps(embedding), category),
+                )
+                connection.commit()
+            except Exception:
+                connection.rollback()
+                raise
 
     def get(self, capture_id: str) -> Optional[dict]:
         with sqlite3.connect(self.db_path) as connection:
@@ -44,5 +39,10 @@ class VectorStoreService:
 
     def delete(self, capture_id: str) -> None:
         with sqlite3.connect(self.db_path) as connection:
-            connection.execute("DELETE FROM vectors WHERE capture_id = ?", (capture_id,))
-            connection.commit()
+            connection.execute("BEGIN")
+            try:
+                connection.execute("DELETE FROM vectors WHERE capture_id = ?", (capture_id,))
+                connection.commit()
+            except Exception:
+                connection.rollback()
+                raise

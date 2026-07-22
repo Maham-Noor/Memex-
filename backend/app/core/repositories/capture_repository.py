@@ -3,24 +3,14 @@ import sqlite3
 from pathlib import Path
 from typing import Optional
 
+from app.core.repositories.migration import MigrationManager
+
 
 class CaptureRepository:
     def __init__(self, db_path: Optional[str] = None):
         self.db_path = db_path or str(Path(__file__).resolve().parents[2] / "memex.db")
-        self._initialize()
-
-    def _initialize(self) -> None:
-        with sqlite3.connect(self.db_path) as connection:
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS captures (
-                    capture_id TEXT PRIMARY KEY,
-                    payload TEXT NOT NULL,
-                    created_at TEXT NOT NULL
-                )
-                """
-            )
-            connection.commit()
+        self.migration_manager = MigrationManager(db_path=self.db_path)
+        self.migration_manager.apply_migrations()
 
     def save(self, capture_id: str, payload: dict, created_at: str) -> None:
         with sqlite3.connect(self.db_path) as connection:

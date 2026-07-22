@@ -3,23 +3,14 @@ import sqlite3
 from pathlib import Path
 from typing import Optional
 
+from app.core.repositories.migration import MigrationManager
+
 
 class SettingsRepository:
     def __init__(self, db_path: Optional[str] = None):
         self.db_path = db_path or str(Path(__file__).resolve().parents[2] / "memex.db")
-        self._initialize()
-
-    def _initialize(self) -> None:
-        with sqlite3.connect(self.db_path) as connection:
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS settings (
-                    key TEXT PRIMARY KEY,
-                    value TEXT NOT NULL
-                )
-                """
-            )
-            connection.commit()
+        self.migration_manager = MigrationManager(db_path=self.db_path)
+        self.migration_manager.apply_migrations()
 
     def set(self, key: str, value: dict) -> None:
         with sqlite3.connect(self.db_path) as connection:
