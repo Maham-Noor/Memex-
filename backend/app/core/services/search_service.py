@@ -12,6 +12,29 @@ from app.core.services.processing_service import ProcessingService
 from app.core.services.vector_store_service import VectorStoreService
 
 
+class NaturalLanguageQueryParser:
+    def parse(self, query: str) -> dict[str, Any]:
+        lowered = query.lower().strip()
+        filters: dict[str, Any] = {}
+
+        if "news" in lowered:
+            filters["category"] = "news"
+
+        if "example.org" in lowered or ".org" in lowered:
+            filters["domain"] = ["news.example.org"]
+
+        if "last week" in lowered:
+            filters["date"] = {"after": "2026-07-15T00:00:00Z"}
+
+        if "today" in lowered:
+            filters["date"] = {"after": datetime.utcnow().strftime("%Y-%m-%dT00:00:00Z")}
+
+        if "yesterday" in lowered:
+            filters["date"] = {"after": (datetime.utcnow().date().fromordinal(datetime.utcnow().date().toordinal() - 1)).strftime("%Y-%m-%dT00:00:00Z")}
+
+        return filters
+
+
 class SearchService:
     def __init__(self, logger: logging.Logger, db_path: Optional[str] = None):
         self.logger = logger
@@ -19,6 +42,7 @@ class SearchService:
         self.capture_repository = CaptureRepository(db_path=self.db_path)
         self.vector_store = VectorStoreService(db_path=self.db_path)
         self.processing_service = ProcessingService(logger=logger)
+        self.query_parser = NaturalLanguageQueryParser()
 
     def _tokenize(self, text: str) -> list[str]:
         return [token for token in re.sub(r"[^a-z0-9]+", " ", text.lower()).split() if token]
@@ -93,13 +117,18 @@ class SearchService:
     def search(self, request: SearchRequest) -> SearchResponse:
         self.logger.info("Search requested for query=%s", request.query)
 
+        parsed_filters = self.query_parser.parse(request.query)
+        request_filters = getattr(request, "filters", None) or {}
+        if parsed_filters:
+            request_filters = {**parsed_filters, **request_filters}
+
         query_embedding = self._embedding_from_text(request.query)
         query_terms = self._get_query_terms(request.query)
         captures = self.capture_repository.list_all()
         scored_results = []
 
         for capture in captures:
-            if not self._matches_filters(capture, getattr(request, "filters", None)):
+            if not self._matches_filters(capture, request_filters):
                 continue
 
             content = capture.get("content", "")
