@@ -12,7 +12,7 @@ class CaptureService:
 
     def receive_capture(self, payload: CapturePayload) -> CaptureResponse:
         self.logger.info("Received capture %s", payload.captureId)
-        self._captures.append(payload.dict())
+        self._captures.append(payload.model_dump())
         received_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         return CaptureResponse(
             status="accepted",
